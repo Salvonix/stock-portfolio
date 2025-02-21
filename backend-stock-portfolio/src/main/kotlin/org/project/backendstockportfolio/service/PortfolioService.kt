@@ -15,11 +15,13 @@ class PortfolioService(
     @Autowired val portfolioRepository: PortfolioRepository,
     @Autowired  val stockRepository: StockRepository
 ) {
+    //Create new portfolio with an owner and no held stock
     fun createPortfolio(owner: String): Portfolio {
         val portfolio = Portfolio(owner = owner)
         return portfolioRepository.insert(portfolio)
     }
 
+    //Fetch the portfolio, the stock with the current price and then add it to the list of held stocks of the portfolio
     fun addStockToPortfolio(portfolioId: String, stockSymbol: String, shares: Int): Portfolio {
         val portfolio = portfolioRepository.findById(portfolioId).orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Portfolio not found") }
         val stock = stockRepository.findBySymbol(stockSymbol) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND,"Stock not found")
@@ -30,25 +32,21 @@ class PortfolioService(
         return portfolioRepository.save(updatedPortfolio)
     }
 
+    //Find Owner of a portfolio simply by name
     fun findByOwner(owner: String): Portfolio {
         return portfolioRepository.findByOwner(owner) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Portfolio not found")
     }
 
+    //Ensures that all operations inside the method execute within a single database transaction
     @Transactional
     fun updateAllStockPricesInPortfolio(portfolioId: String): Portfolio {
-        // Fetch the portfolio
+        // Fetch the portfolio in question
         val portfolio = portfolioRepository.findById(portfolioId)
             .orElseThrow { Exception("Portfolio not found") }
 
-        // Loop through each holding and update the stock price
         portfolio.holdings.forEach { stockHolding ->
-            val stockSymbol = stockHolding.stock.symbol
-            val currentPrice = stockRepository.findBySymbol(stockSymbol)?.currentPrice ?: 0.0
-
-            // Update the stock price in the StockHolding object
-            stockHolding.stock = stockHolding.stock.copy(currentPrice = currentPrice)
-
-            // You can also update the values in the StockHolding as needed (e.g., total value, profit value, etc.)
+            // Update the stock price in the StockHolding object depending on the heritage class
+            stockHolding.stock = stockHolding.stock.interestOnPrice()
         }
 
         // Save the updated portfolio with updated stock prices

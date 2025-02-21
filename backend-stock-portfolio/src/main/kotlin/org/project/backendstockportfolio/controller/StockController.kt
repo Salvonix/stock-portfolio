@@ -1,5 +1,6 @@
 package org.project.backendstockportfolio.controller
 
+import org.project.backendstockportfolio.dto.CreateStockRequests
 import org.project.backendstockportfolio.model.Stock
 import org.project.backendstockportfolio.service.StockService
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,7 +20,7 @@ class StockController(@Autowired val stockService: StockService) {
         return stockService.findAll()
     }
     @PostMapping("/add")
-    fun addStock(@RequestBody stock: Stock) {
-        stockService.addStock(stock)
+    fun addStock(@RequestBody stockRequests: CreateStockRequests) {
+        stockService.addStock(stockRequests)
     }
 }

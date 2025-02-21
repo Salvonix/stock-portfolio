@@ -7,19 +7,16 @@ import kotlin.random.Random
 
 @Service
 class StockPriceUpdater(private val stockRepository: StockRepository) {
-
+    //Run this method at every 10s interval
     @Scheduled(fixedRate = 10000)
     fun updateStockPrices() {
         val stocks = stockRepository.findAll()
 
         stocks.forEach { stock ->
-            val priceChange = Random.nextDouble(-1.5, 1.5)
-            val newPrice = (stock.currentPrice + priceChange).coerceAtLeast(0.5)
+            //Set new price depending on the type of the stock
+            stockRepository.save(stock.interestOnPrice())
 
-            val updatedStock = stock.copy(currentPrice = newPrice)
-            stockRepository.save(updatedStock)
-
-            println("Updated ${stock.symbol} price: $${"%.2f".format(newPrice)}")
+            println("Updated ${stock.symbol} price: $${"%.2f".format(stock.currentPrice)}")
         }
     }
 }

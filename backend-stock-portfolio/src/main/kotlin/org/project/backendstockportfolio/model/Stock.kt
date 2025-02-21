@@ -2,16 +2,27 @@ package org.project.backendstockportfolio.model
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 
+//Trying to use JsonType and JsonSub to do some good polymorphism
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "type"
+)
+@JsonSubTypes(
+    JsonSubTypes.Type(value = CommonStock::class, name = "common"),
+    JsonSubTypes.Type(value = PreferredStock::class, name = "preferred")
+)
+
+//Base Stock class
 @Document(collection = "stocks")
-data class Stock(
+abstract class Stock(
     @Id val id: String? = null,
-    val name: String,
-    val symbol: String,
-    val currentPrice: Double
+    open val name: String,
+    open val symbol: String,
+    open val currentPrice: Double
 ) {
-    // Method to update the stock price if needed (in case of external updates)
-    fun updatePrice(newPrice: Double): Stock {
-        return this.copy(currentPrice = newPrice)
-    }
+    abstract fun interestOnPrice(): Stock
 }

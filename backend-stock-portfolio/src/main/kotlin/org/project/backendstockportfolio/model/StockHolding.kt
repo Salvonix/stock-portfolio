@@ -3,6 +3,7 @@ package org.project.backendstockportfolio.model
 import org.springframework.data.mongodb.core.mapping.DBRef
 import org.springframework.data.mongodb.core.mapping.Document
 
+//Represent the amount of the stock held by an owner and at which price he bought it
 data class StockHolding(
     @DBRef(lazy = false) var stock: Stock,  // Ensure the stock is resolved eagerly
     val sharesOwned: Int,
@@ -13,7 +14,7 @@ data class StockHolding(
         get() = sharesOwned * stock.currentPrice
 
     val purchaseValue: Double
-        get() = purchasePrice * sharesOwned  // Assuming purchase price is per share
+        get() = purchasePrice * sharesOwned
 
     val profitValue: Double
         get() = totalValue - purchaseValue
